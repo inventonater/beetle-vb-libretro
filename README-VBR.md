@@ -74,6 +74,55 @@ cc -O2 -I libretro-common/include -I . tools/vbr/stats.c -o stats
 ./stats ./mednafen_vb_libretro.dylib game.vb 6000 [script]
 ```
 
+## Results at adoption (`2f6e242`)
+
+**Parity.** All 31 retail and prototype images in the Game Reference Library,
+6,000 frames each with the library's smoke inputs: identical frame, audio and
+RAM hashes from upstream `83ed426` and this branch. Four were rerun against
+the exact pinned build (the first run used a build that differed only in its
+embedded version string), with the same result.
+
+**Estimates across the library**, same runs. "Over budget" counts drawn game
+frames whose estimate exceeds 400,000 × (FRMCYC + 1). The fixed inputs reach
+menus, attract modes and early play only; they do not reach, for example,
+Jack Bros.' maze transition that the study measured at over 1.6 million
+cycles. Where the study describes a scene, the note says so; the other rows
+are the model's prediction, not a hardware observation.
+
+| Image | Peak estimate (cycles) | Frames over budget | Game frames drawn | Note |
+| --- | ---: | ---: | ---: | --- |
+| 3-D Tetris (USA) | 167,090 | 0 | 3614 |  |
+| Galactic Pinball (Japan, USA) (En) | 418,752 | 2 | 5993 |  |
+| Golf (USA) | 1,022,873 | 606 | 1889 | study: course map "over a million cycles" |
+| Innsmouth no Yakata (Japan) | 419,178 | 177 | 5987 | study: full-screen affine logo at FRMCYC 0 runs at half speed |
+| Jack Bros. (USA) | 613,831 | 44 | 5975 |  |
+| Jack Bros. no Meiro de Hiihoo! (Japan) | 613,831 | 34 | 5975 |  |
+| Mario Clash (Japan, USA) (En) | 259,500 | 0 | 5958 |  |
+| Mario's Tennis (Japan, USA) (En) | 668,657 | 0 | 3774 | study: title well past one frame; FRMCYC 1 in play |
+| Nester's Funky Bowling (USA) | 440,849 | 0 | 4738 |  |
+| Panic Bomber (USA) | 319,340 | 0 | 5979 |  |
+| Red Alarm (Japan) | 127,640 | 0 | 2219 |  |
+| Red Alarm (USA) | 127,640 | 0 | 2219 |  |
+| SD Gundam - Dimension War (Japan) | 376,323 | 0 | 3428 |  |
+| Space Invaders - Virtual Collection (Japan) | 418,279 | 55 | 5797 | study: same as Innsmouth |
+| Space Squash (Japan) | 459,202 | 1303 | 5935 | one full-screen affine world at FRMCYC 0 |
+| T&E Virtual Golf (Japan) | 1,022,873 | 1202 | 3723 | same game as Golf |
+| Teleroboxer (Japan, USA) (En) | 511,330 | 21 | 5440 |  |
+| Tobidase! Panibon (Japan) | 319,340 | 0 | 5979 |  |
+| V-Tetris (Japan) (En) | 531,084 | 270 | 5984 | one full-screen affine world at FRMCYC 0 |
+| Vertical Force (Japan) | 690,337 | 629 | 5992 | as the USA release |
+| Vertical Force (USA) | 690,337 | 629 | 5992 | two large affine worlds at FRMCYC 0 |
+| Virtual Bowling (Japan) (En) | 1,263,685 | 0 | 4292 |  |
+| Virtual Boy Wario Land (Japan, USA) (En) | 349,849 | 0 | 5997 |  |
+| Virtual Fishing (Japan) | 187,548 | 0 | 5998 |  |
+| Virtual Lab (Japan) | 334,941 | 0 | 2997 |  |
+| Virtual League Baseball (USA) | 169,736 | 0 | 2998 |  |
+| Virtual Pro Yakyuu '95 (Japan) | 169,736 | 0 | 2998 |  |
+| Waterworld (USA) | 158,593 | 0 | 5406 |  |
+| Bound High (Japan) (En) (Proto) | 599,571 | 0 | 2997 | study: full-screen affine play area, FRMCYC 1 |
+| Niko-chan Battle (Japan) (Proto) | 890,345 | 0 | 3948 |  |
+| Space Pinball (Japan) (En) (Proto) | 456,205 | 6 | 5994 |  |
+
 ## Keeping it current
 
 The workbench pins an exact commit of this branch in its Virtual Boy
