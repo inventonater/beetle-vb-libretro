@@ -56,6 +56,7 @@ static struct MDFN_Surface surf;
 #include "mednafen/hw_cpu/v810/v810_cpu.h"
 
 #include "libretro_core_options.h"
+#include "libretro-vbr.h"
 
 enum
 {
@@ -2752,3 +2753,39 @@ size_t retro_get_memory_size(unsigned type)
 
 void retro_cheat_reset(void) { }
 void retro_cheat_set(unsigned a, bool b, const char *c) { }
+
+/* Read-only research instrumentation (inventonater fork, vbr API 1); see
+ * libretro-vbr.h. These read VIP state and never modify the emulator. */
+extern "C" RETRO_API unsigned vbr_api_version(void)
+{
+   return VBR_API_VERSION;
+}
+
+extern "C" RETRO_API uint16_t vbr_vip_read16(uint32_t address)
+{
+   return VIP_Read16(0, address);
+}
+
+/* The Game Reference Library's research core exported this name first. */
+extern "C" RETRO_API uint16_t research_vip_read16(uint32_t address)
+{
+   return VIP_Read16(0, address);
+}
+
+extern "C" RETRO_API size_t vbr_vip_snapshot(uint16_t *out, size_t words)
+{
+   size_t i;
+   size_t n = words < VBR_SNAPSHOT_WORDS ? words : VBR_SNAPSHOT_WORDS;
+
+   if(!out)
+      return 0;
+   for(i = 0; i < n; i++)
+      out[i] = (i < 0x20000) ? VIP_Read16(0, (uint32_t)(i * 2))
+                             : VIP_Read16(0, 0x5F800 + (uint32_t)((i - 0x20000) * 2));
+   return n;
+}
+
+extern "C" RETRO_API size_t vbr_get_frame_stats(struct vbr_frame_stats *out, size_t size)
+{
+   return VBR_GetFrameStats(out, size);
+}

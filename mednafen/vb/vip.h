@@ -66,6 +66,10 @@ int VIP_StateAction(StateMem *sm, int load, int data_only);
 uint32 VIP_GetRegister(const unsigned int id, char *special, const uint32 special_len);
 void VIP_SetRegister(const unsigned int id, const uint32 value);
 
+/* Read-only research instrumentation (inventonater fork); see libretro-vbr.h. */
+struct vbr_frame_stats;
+size_t VBR_GetFrameStats(struct vbr_frame_stats *out, size_t size);
+
 #ifdef __cplusplus
 }
 #endif

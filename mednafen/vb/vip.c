@@ -372,6 +372,9 @@ static uint32 DrawingBlock;
 static int32 SB_Latch;
 static int32 SBOUT_InactiveTime;
 
+/* Read-only research instrumentation (inventonater fork, vbr API 1). */
+#include "vip_research.inc"
+
 static void CheckIRQ(void)
 {
    VBIRQ_Assert(VBIRQ_SOURCE_VIP, (bool)(InterruptEnable & InterruptPending));
@@ -417,6 +420,7 @@ void VIP_Power(void)
    DrawingActive = false;
    DrawingFB = 0;
    DrawingBlock = 0;
+   VBR_Reset();
 
    DPCTRL = 2;
    DisplayActive = false;
@@ -619,6 +623,7 @@ static INLINE void WriteRegister(int32 timestamp, uint32 A, uint16 V)
             DisplayFB        ^= 1;
             DrawingActive     = 0;
             DrawingCounter    = 0;
+            VBR_AbortFrame();
             InterruptPending &= ~(INT_SB_HIT | INT_XP_END | INT_TIME_ERR);
             CheckIRQ();
          }
@@ -724,6 +729,7 @@ uint16 VIP_Read16(int32 timestamp, uint32 A)
 
 void VIP_Write8(int32 timestamp, uint32 A, uint8 V)
 {
+   VBR_CountWrite(A);
    switch(A >> 16)
    {
       case 0x0:
@@ -757,6 +763,7 @@ void VIP_Write8(int32 timestamp, uint32 A, uint8 V)
 
 void VIP_Write16(int32 timestamp, uint32 A, uint16 V)
 {
+   VBR_CountWrite(A);
    switch(A >> 16)
    {
       case 0x0:
@@ -1306,6 +1313,8 @@ v810_timestamp_t MDFN_FASTCALL VIP_Update(const v810_timestamp_t timestamp)
          {
             MDFN_ALIGN(8) uint8 DrawingBuffers[2][512 * 8];	/* Don't decrease this from 512 unless you adjust vip_draw.inc(including areas that draw off-visible >= 384 and >= -7 for speed reasons) */
 
+            VBR_AccountStrip(DrawingBlock);
+
             if(skip && InstantDisplayHack && AllowDrawSkip) { }
             else
             {
@@ -1340,6 +1349,7 @@ v810_timestamp_t MDFN_FASTCALL VIP_Update(const v810_timestamp_t timestamp)
             if(DrawingBlock == 28)
             {
                DrawingActive = false;
+               VBR_FinishFrame();
 
                InterruptPending |= INT_XP_END;
                CheckIRQ();
@@ -1404,6 +1414,7 @@ v810_timestamp_t MDFN_FASTCALL VIP_Update(const v810_timestamp_t timestamp)
                {
                   InterruptPending |= INT_GAME_START;
                   CheckIRQ();
+                  VBR_GameStart((XPCTRL & XPCTRL_XP_EN) != 0);
 
                   if(XPCTRL & XPCTRL_XP_EN)
                   {
